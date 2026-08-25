@@ -1,0 +1,63 @@
+{% extends "admin/base_admin.html" %}
+{% import "partials/macros.html" as ui %}
+{% block admin_title %}Nail Arts{% endblock %}
+{% block page_heading %}Nail Arts{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar">
+  <form class="admin-filters" method="get" action="/admin/nail-arts">
+    <input type="search" name="search" value="{{ current_search }}" placeholder="Search designs…" aria-label="Search">
+    <select name="category" aria-label="Category">
+      <option value="">All categories</option>
+      {% for c in categories %}<option value="{{ c.slug }}" {{ 'selected' if current_category == c.slug }}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="status" aria-label="Status">
+      <option value="" {{ 'selected' if not current_status }}>All statuses</option>
+      <option value="active" {{ 'selected' if current_status == 'active' }}>Active</option>
+      <option value="inactive" {{ 'selected' if current_status == 'inactive' }}>Inactive</option>
+    </select>
+    <select name="sort" aria-label="Sort">
+      {% for value, label in sort_labels %}<option value="{{ value }}" {{ 'selected' if current_sort == value }}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn--outline btn--sm">Filter</button>
+  </form>
+  <a href="/admin/nail-arts/new" class="btn btn--primary btn--sm">+ Add Nail Art</a>
+</div>
+
+{% if result.items %}
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Design</th><th>Category</th><th>Price</th><th>Status</th><th class="ta-right">Actions</th></tr></thead>
+    <tbody>
+      {% for n in result.items %}
+      <tr data-row-id="{{ n.id }}">
+        <td class="admin-table__name">
+          {% set url = media_url(n.image_path) %}
+          {% if url %}<img class="admin-thumb" src="{{ url }}" alt="" width="44" height="44">{% else %}<span class="admin-thumb admin-thumb--empty">{{ n.name[:1]|upper }}</span>{% endif %}
+          <a href="/admin/nail-arts/{{ n.id }}/edit">{{ n.name }}</a>
+        </td>
+        <td>{{ n.category.name if n.category else '—' }}</td>
+        <td>{{ format_price(n.price) }}</td>
+        <td><span class="badge badge--{{ 'on' if n.status.value == 'active' else 'off' }}">{{ n.status.value|capitalize }}</span></td>
+        <td class="ta-right admin-actions">
+          <a class="btn btn--ghost btn--xs" href="/admin/nail-arts/{{ n.id }}/edit">Edit</a>
+          {% if n.status.value == 'active' %}
+            <button class="btn btn--ghost btn--xs" data-action="nail-status" data-id="{{ n.id }}" data-status="inactive" data-name="{{ n.name }}">Deactivate</button>
+          {% else %}
+            <button class="btn btn--ghost btn--xs" data-action="nail-status" data-id="{{ n.id }}" data-status="active" data-name="{{ n.name }}">Restore</button>
+          {% endif %}
+          <button class="btn btn--danger btn--xs" data-action="nail-delete" data-id="{{ n.id }}" data-name="{{ n.name }}">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ ui.pagination(result, '/admin/nail-arts', {'search': current_search, 'category': current_category, 'status': current_status, 'sort': current_sort}) }}
+{% else %}
+<div class="admin-empty">
+  <p>No nail arts match your filters.</p>
+  <a href="/admin/nail-arts" class="btn btn--outline btn--sm">Clear filters</a>
+</div>
+{% endif %}
+{% endblock %}

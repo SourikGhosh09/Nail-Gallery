@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Miss Universe Nail Art Studio — Docker Compose
+#
+# Quick start:
+#   1. Copy .env.example to .env and edit ADMIN_EMAIL / ADMIN_PASSWORD.
+#   2. docker compose up --build
+#   3. Open http://localhost:8000  (admin at /admin)
+#
+# By default this runs with an embedded SQLite database stored on a named
+# volume (zero configuration). To use PostgreSQL instead, uncomment the "db"
+# service below and set DATABASE_URL in your .env accordingly.
+# ---------------------------------------------------------------------------
+services:
+  web:
+    build: .
+    image: miss-universe-nail-studio
+    env_file:
+      - .env
+    environment:
+      # Persist the SQLite database on the "data" volume (absolute path).
+      # If you switch to PostgreSQL, set DATABASE_URL in .env and this default
+      # is ignored.
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/nailstudio.db}
+      UPLOAD_DIR: /app/storage/uploads
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/app/storage/uploads
+      - data:/app/data
+    restart: unless-stopped
+    # depends_on:
+    #   - db
+
+  # --- Optional PostgreSQL (uncomment to use) ------------------------------
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: nailstudio
+  #     POSTGRES_PASSWORD: change-this-password
+  #     POSTGRES_DB: nailstudio
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   # Then in .env set:
+  #   # DATABASE_URL=postgresql+psycopg://nailstudio:change-this-password@db:5432/nailstudio
+
+volumes:
+  uploads:
+  data:
+  # pgdata:

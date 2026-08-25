@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Page not found — {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}
+{% block content %}
+<section class="section state-page">
+  <div class="container">
+    <p class="state-page__code">404</p>
+    <h1 class="state-page__title">Page not found</h1>
+    <p class="state-page__msg">{{ message or "The page you are looking for could not be found." }}</p>
+    <div class="state-page__actions">
+      <a href="/" class="btn btn--primary">Back Home</a>
+      <a href="/catalog" class="btn btn--outline">Browse Catalog</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

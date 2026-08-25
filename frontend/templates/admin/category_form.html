@@ -1,0 +1,34 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_title %}{{ 'Edit' if category else 'Add' }} Category{% endblock %}
+{% block page_heading %}{{ 'Edit Category' if category else 'Add Category' }}{% endblock %}
+
+{% block admin_content %}
+<form class="admin-form admin-form--narrow" data-category-form data-category-id="{{ category.id if category else '' }}" novalidate>
+  <div class="form-error" data-form-error hidden></div>
+
+  <label class="field field--block">
+    <span class="field__label">Name <em>*</em></span>
+    <input type="text" name="name" value="{{ category.name if category else '' }}" maxlength="120" required>
+    <span class="field__error" data-error-for="name"></span>
+  </label>
+
+  <label class="field field--block">
+    <span class="field__label">Description</span>
+    <textarea name="description" rows="4" maxlength="2000" placeholder="Shown on the site where helpful.">{{ category.description if category else '' }}</textarea>
+    <span class="field__error" data-error-for="description"></span>
+  </label>
+
+  <label class="field field--block">
+    <span class="field__label">Status</span>
+    <select name="status">
+      <option value="active" {{ 'selected' if not category or category.status.value == 'active' }}>Active (visible on site)</option>
+      <option value="inactive" {{ 'selected' if category and category.status.value == 'inactive' }}>Inactive (hidden)</option>
+    </select>
+  </label>
+
+  <div class="admin-form__actions">
+    <button type="submit" class="btn btn--primary" data-submit>{{ 'Save Changes' if category else 'Create Category' }}</button>
+    <a href="/admin/categories" class="btn btn--ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

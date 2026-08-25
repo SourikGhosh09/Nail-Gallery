@@ -1,0 +1,63 @@
+{# Authenticated admin layout: sidebar + topbar + content. #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block admin_title %}Admin{% endblock %} — {{ cfg.STUDIO_NAME }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="icon" href="/static/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon.png">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
+</head>
+<body class="admin">
+  <div class="admin-shell">
+    <aside class="admin-side" data-admin-side>
+      <a class="admin-brand" href="/admin/dashboard">
+        <img class="admin-brand__logo" src="/static/img/logo.png" alt="{{ cfg.STUDIO_NAME }} logo" width="36" height="36">
+        <span><span class="admin-brand__name">{{ cfg.STUDIO_NAME }}</span><small>Admin</small></span>
+      </a>
+      <nav class="admin-nav">
+        <a href="/admin/dashboard" class="{{ 'is-active' if admin_page == 'dashboard' }}">Dashboard</a>
+        <a href="/admin/nail-arts" class="{{ 'is-active' if admin_page == 'nail-arts' }}">Nail Arts</a>
+        <a href="/admin/categories" class="{{ 'is-active' if admin_page == 'categories' }}">Categories</a>
+        <div class="admin-nav__sep"></div>
+        <a href="/" target="_blank" rel="noopener">View Site ↗</a>
+        <button type="button" class="admin-nav__logout" data-logout>Log out</button>
+      </nav>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-top">
+        <button class="admin-burger" type="button" data-side-toggle aria-label="Toggle menu">☰</button>
+        <h1 class="admin-top__title">{% block page_heading %}Admin{% endblock %}</h1>
+        <div class="admin-top__user">
+          {% if user %}<span class="admin-top__name">{{ user.name }}</span>{% endif %}
+        </div>
+      </header>
+
+      <div class="admin-content">
+        {% block admin_content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  {# Toast notifications + confirmation modal (controlled by admin.js) #}
+  <div class="toast-wrap" data-toast-wrap aria-live="polite"></div>
+  <div class="modal" data-modal hidden>
+    <div class="modal__backdrop" data-modal-close></div>
+    <div class="modal__box" role="dialog" aria-modal="true">
+      <h3 class="modal__title" data-modal-title>Confirm</h3>
+      <div class="modal__body" data-modal-body></div>
+      <div class="modal__actions" data-modal-actions></div>
+    </div>
+  </div>
+
+  <script src="/static/js/admin.js" defer></script>
+  {% block admin_scripts %}{% endblock %}
+</body>
+</html>

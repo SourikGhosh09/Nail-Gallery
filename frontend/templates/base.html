@@ -1,0 +1,44 @@
+{#
+  Public site base layout.
+  Provides SEO head (title, meta, Open Graph, canonical), fonts, styles,
+  header/footer, and blocks child templates fill in.
+#}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ cfg.STUDIO_DESCRIPTION }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{{ cfg.BASE_URL }}{{ request.url.path }}{% endblock %}">
+
+  {# ---- Open Graph / social ---- #}
+  <meta property="og:site_name" content="{{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.meta_description() }}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="{{ cfg.BASE_URL }}{{ request.url.path }}">
+  {% block og_image %}<meta property="og:image" content="{{ cfg.BASE_URL }}/static/img/og-default.svg">{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#b76e79">
+
+  {# ---- Fonts & styles ---- #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="icon" href="/static/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon.png">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
+  {% block extra_head %}{% endblock %}
+  {% block structured_data %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% include "partials/header.html" %}
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/footer.html" %}
+  {% block scripts %}<script src="/static/js/catalog.js" defer></script>{% endblock %}
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Keep line endings sane so shell scripts run on the Linux server even if the
+# code was edited or cloned on Windows. (Windows CRLF endings break bash
+# scripts with a confusing "bad interpreter" error — this prevents that.)
+*.sh        text eol=lf
+Caddyfile   text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf

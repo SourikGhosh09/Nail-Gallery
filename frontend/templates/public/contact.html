@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Contact — {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}
+{% block meta_description %}Get in touch with {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }} on WhatsApp, phone or e-mail to book your nail appointment.{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <p class="section__eyebrow">Get in Touch</p>
+    <h1 class="page-head__title">Contact Us</h1>
+    <p class="page-head__sub">We'd love to help you design your perfect set.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contact__grid">
+    <div class="contact__details">
+      <h2 class="section__title">Studio Details</h2>
+      <ul class="contact__list">
+        <li><span>WhatsApp</span><a href="{{ whatsapp_link() }}" target="_blank" rel="noopener">Message us</a></li>
+        <li><span>Phone</span><a href="tel:{{ cfg.CONTACT_PHONE }}">{{ cfg.CONTACT_PHONE }}</a></li>
+        <li><span>E-mail</span><a href="mailto:{{ cfg.CONTACT_EMAIL }}">{{ cfg.CONTACT_EMAIL }}</a></li>
+        <li><span>Address</span><span>{{ cfg.CONTACT_ADDRESS }}</span></li>
+        <li><span>Instagram</span><a href="{{ cfg.INSTAGRAM_URL }}" target="_blank" rel="noopener">Follow us</a></li>
+      </ul>
+    </div>
+
+    <div class="contact__form-wrap">
+      <h2 class="section__title">Send a Quick Message</h2>
+      <p class="contact__hint">Type your message and we'll open WhatsApp with it ready to send.</p>
+      <form class="contact-form" data-wa-form data-wa-number="{{ cfg.WHATSAPP_NUMBER }}">
+        <label class="field field--block">
+          <span class="field__label">Your name</span>
+          <input type="text" name="name" placeholder="Jane Doe" autocomplete="name">
+        </label>
+        <label class="field field--block">
+          <span class="field__label">Message</span>
+          <textarea name="message" rows="4" placeholder="Hi! I'm interested in a bridal set for…"></textarea>
+        </label>
+        <button type="submit" class="btn btn--primary">Open in WhatsApp</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

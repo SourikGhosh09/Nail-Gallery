@@ -1,0 +1,28 @@
+# Keep the image small and the build reproducible.
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Local secrets & data must never enter the image.
+.env
+*.db
+*.sqlite
+*.sqlite3
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+# Dev-only / VCS / editor noise.
+.git/
+.gitignore
+.idea/
+.vscode/
+.claude/
+backend/tests/
+docs/
+*.md

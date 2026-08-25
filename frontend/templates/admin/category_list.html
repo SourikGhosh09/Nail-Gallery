@@ -1,0 +1,42 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_title %}Categories{% endblock %}
+{% block page_heading %}Categories{% endblock %}
+
+{% block admin_content %}
+<div class="admin-toolbar admin-toolbar--end">
+  <a href="/admin/categories/new" class="btn btn--primary btn--sm">+ Add Category</a>
+</div>
+
+{% if categories %}
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Description</th><th>Designs</th><th>Status</th><th>Created</th><th class="ta-right">Actions</th></tr></thead>
+    <tbody>
+      {% for c in categories %}
+      <tr data-row-id="{{ c.id }}">
+        <td class="admin-table__name"><a href="/admin/categories/{{ c.id }}/edit">{{ c.name }}</a></td>
+        <td class="admin-table__desc">{{ (c.description or '')|truncate(70) }}</td>
+        <td><span class="count-pill">{{ c.active_design_count }}/{{ c.design_count }}</span></td>
+        <td><span class="badge badge--{{ 'on' if c.status.value == 'active' else 'off' }}">{{ c.status.value|capitalize }}</span></td>
+        <td>{{ c.created_at.strftime('%b %d, %Y') if c.created_at else '—' }}</td>
+        <td class="ta-right admin-actions">
+          <a class="btn btn--ghost btn--xs" href="/admin/categories/{{ c.id }}/edit">Edit</a>
+          {% if c.status.value == 'active' %}
+            <button class="btn btn--ghost btn--xs" data-action="cat-status" data-id="{{ c.id }}" data-status="inactive" data-name="{{ c.name }}">Deactivate</button>
+          {% else %}
+            <button class="btn btn--ghost btn--xs" data-action="cat-status" data-id="{{ c.id }}" data-status="active" data-name="{{ c.name }}">Restore</button>
+          {% endif %}
+          <button class="btn btn--danger btn--xs" data-action="cat-delete" data-id="{{ c.id }}" data-name="{{ c.name }}" data-count="{{ c.design_count }}">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="admin-empty">
+  <p>No categories yet. Categories you add here appear instantly on the public site.</p>
+  <a href="/admin/categories/new" class="btn btn--primary btn--sm">Add your first category</a>
+</div>
+{% endif %}
+{% endblock %}

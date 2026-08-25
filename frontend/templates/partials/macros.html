@@ -1,0 +1,46 @@
+{# Reusable presentation macros (component-like building blocks). #}
+
+{% macro nail_card(nail) %}
+<article class="card">
+  <a class="card__media" href="/nail/{{ nail.slug }}" aria-label="View {{ nail.name }}">
+    {% set url = media_url(nail.image_path) %}
+    {% if url %}
+      <img src="{{ url }}" alt="{{ nail.image_alt or nail.name }}" loading="lazy" decoding="async" width="600" height="600">
+    {% else %}
+      <span class="card__placeholder" aria-hidden="true">{{ nail.name[:1]|upper }}</span>
+    {% endif %}
+    {% if nail.category %}<span class="card__chip">{{ nail.category.name }}</span>{% endif %}
+  </a>
+  <div class="card__body">
+    <h3 class="card__title"><a href="/nail/{{ nail.slug }}">{{ nail.name }}</a></h3>
+    <p class="card__desc">{{ nail.description|truncate(80) }}</p>
+    <div class="card__foot">
+      <span class="card__price">{{ format_price(nail.price) }}</span>
+      <a class="btn btn--ghost btn--sm" href="/nail/{{ nail.slug }}">View Details</a>
+    </div>
+  </div>
+</article>
+{% endmacro %}
+
+
+{% macro pagination(result, base_path, params) %}
+{% if result.pages > 1 %}
+<nav class="pagination" aria-label="Catalogue pages">
+  {% set qs = [] %}
+  {% for k, v in params.items() %}{% if v and k != 'page' %}{% set _ = qs.append(k ~ '=' ~ v|urlencode) %}{% endif %}{% endfor %}
+  {% set base_qs = qs|join('&') %}
+  {% macro page_link(p, label, disabled=False, active=False) %}
+    {% if disabled %}
+      <span class="pagination__item is-disabled">{{ label }}</span>
+    {% else %}
+      <a class="pagination__item {{ 'is-active' if active }}" href="{{ base_path }}?{{ (base_qs ~ '&') if base_qs }}page={{ p }}">{{ label }}</a>
+    {% endif %}
+  {% endmacro %}
+  {{ page_link(result.page - 1, '‹ Prev', disabled=not result.has_prev) }}
+  {% for p in range(1, result.pages + 1) %}
+    {{ page_link(p, p, active=(p == result.page)) }}
+  {% endfor %}
+  {{ page_link(result.page + 1, 'Next ›', disabled=not result.has_next) }}
+</nav>
+{% endif %}
+{% endmacro %}

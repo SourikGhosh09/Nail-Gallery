@@ -1,0 +1,64 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+
+{% block admin_content %}
+<div class="stat-grid">
+  <div class="stat">
+    <span class="stat__label">Total Nail Arts</span>
+    <span class="stat__value">{{ stats.total }}</span>
+  </div>
+  <div class="stat stat--good">
+    <span class="stat__label">Active</span>
+    <span class="stat__value">{{ stats.active }}</span>
+  </div>
+  <div class="stat stat--muted">
+    <span class="stat__label">Inactive</span>
+    <span class="stat__value">{{ stats.inactive }}</span>
+  </div>
+  <div class="stat stat--accent">
+    <span class="stat__label">Categories</span>
+    <span class="stat__value">{{ stats.categories }}</span>
+  </div>
+</div>
+
+<div class="quick-actions">
+  <a href="/admin/nail-arts/new" class="btn btn--primary">+ Add Nail Art</a>
+  <a href="/admin/categories/new" class="btn btn--outline">+ Add Category</a>
+  <a href="/admin/nail-arts" class="btn btn--ghost">Manage Nail Arts</a>
+  <a href="/admin/categories" class="btn btn--ghost">Manage Categories</a>
+</div>
+
+<section class="admin-panel">
+  <div class="admin-panel__head">
+    <h2>Recent Nail Arts</h2>
+    <a href="/admin/nail-arts" class="link-more">View all →</a>
+  </div>
+  {% if recent %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Design</th><th>Category</th><th>Price</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for n in recent %}
+        <tr>
+          <td class="admin-table__name">
+            {% set url = media_url(n.image_path) %}
+            {% if url %}<img class="admin-thumb" src="{{ url }}" alt="" width="44" height="44">{% else %}<span class="admin-thumb admin-thumb--empty">{{ n.name[:1]|upper }}</span>{% endif %}
+            <a href="/admin/nail-arts/{{ n.id }}/edit">{{ n.name }}</a>
+          </td>
+          <td>{{ n.category.name if n.category else '—' }}</td>
+          <td>{{ format_price(n.price) }}</td>
+          <td><span class="badge badge--{{ 'on' if n.status.value == 'active' else 'off' }}">{{ n.status.value|capitalize }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="admin-empty">
+    <p>No nail arts yet.</p>
+    <a href="/admin/nail-arts/new" class="btn btn--primary btn--sm">Add your first design</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% import "partials/macros.html" as ui %}
+
+{% block title %}{{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }} — {{ cfg.STUDIO_TAGLINE }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero__inner">
+    <div class="hero__content">
+      <p class="hero__eyebrow">{{ cfg.STUDIO_SUBTITLE }}</p>
+      <h1 class="hero__title">{{ cfg.STUDIO_NAME }}</h1>
+      <p class="hero__tagline">{{ cfg.STUDIO_TAGLINE }}</p>
+      <p class="hero__lead">{{ cfg.STUDIO_DESCRIPTION }}</p>
+      <div class="hero__actions">
+        <a href="/catalog" class="btn btn--primary">Explore the Collection</a>
+        <a href="{{ whatsapp_link() }}" target="_blank" rel="noopener" class="btn btn--outline">Book on WhatsApp</a>
+      </div>
+    </div>
+    <div class="hero__art" aria-hidden="true">
+      <span class="hero__blob hero__blob--1"></span>
+      <span class="hero__blob hero__blob--2"></span>
+      <span class="hero__sparkle">✦</span>
+    </div>
+  </div>
+</section>
+
+{% if featured %}
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <div>
+        <p class="section__eyebrow">Handpicked</p>
+        <h2 class="section__title">Featured Designs</h2>
+      </div>
+      <a href="/catalog" class="link-more">View all →</a>
+    </div>
+    <div class="grid grid--cards">
+      {% for nail in featured %}{{ ui.nail_card(nail) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if categories %}
+<section class="section section--muted">
+  <div class="container">
+    <div class="section__head section__head--center">
+      <div>
+        <p class="section__eyebrow">Browse</p>
+        <h2 class="section__title">Shop by Category</h2>
+      </div>
+    </div>
+    <div class="cat-band">
+      {% for c in categories %}
+      <a class="cat-band__item" href="/catalog?category={{ c.slug }}">
+        <span class="cat-band__name">{{ c.name }}</span>
+        <span class="cat-band__count">{{ c.active_design_count }} design{{ '' if c.active_design_count == 1 else 's' }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="values">
+      <div class="values__item">
+        <span class="values__icon">✦</span>
+        <h3>Premium Artistry</h3>
+        <p>Every set is hand-crafted with meticulous attention to detail and finish.</p>
+      </div>
+      <div class="values__item">
+        <span class="values__icon">❋</span>
+        <h3>Bespoke Designs</h3>
+        <p>From bridal elegance to bold chrome, tailored to your personal style.</p>
+      </div>
+      <div class="values__item">
+        <span class="values__icon">♥</span>
+        <h3>Loved by Clients</h3>
+        <p>A studio experience as refined and memorable as the results.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container cta-band__inner">
+    <h2>Ready to find your perfect set?</h2>
+    <p>Message us on WhatsApp and let's design something beautiful together.</p>
+    <a href="{{ whatsapp_link() }}" target="_blank" rel="noopener" class="btn btn--primary">Start on WhatsApp</a>
+  </div>
+</section>
+{% endblock %}

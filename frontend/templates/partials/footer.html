@@ -1,0 +1,39 @@
+{# Site footer. #}
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <img class="brand__logo" src="/static/img/logo.png" alt="{{ cfg.STUDIO_NAME }} logo" width="54" height="54">
+      <span class="brand__name">{{ cfg.STUDIO_NAME }}</span>
+      <span class="brand__sub">{{ cfg.STUDIO_SUBTITLE }}</span>
+      <p class="site-footer__tag">{{ cfg.STUDIO_TAGLINE }}</p>
+    </div>
+
+    <div class="site-footer__col">
+      <h4>Explore</h4>
+      <a href="/">Home</a>
+      <a href="/catalog">Catalog</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </div>
+
+    <div class="site-footer__col">
+      <h4>Contact</h4>
+      <a href="mailto:{{ cfg.CONTACT_EMAIL }}">{{ cfg.CONTACT_EMAIL }}</a>
+      <a href="tel:{{ cfg.CONTACT_PHONE }}">{{ cfg.CONTACT_PHONE }}</a>
+      <span>{{ cfg.CONTACT_ADDRESS }}</span>
+    </div>
+
+    <div class="site-footer__col">
+      <h4>Follow</h4>
+      <a href="{{ cfg.INSTAGRAM_URL }}" target="_blank" rel="noopener">Instagram</a>
+      <a href="{{ cfg.FACEBOOK_URL }}" target="_blank" rel="noopener">Facebook</a>
+      <a href="{{ whatsapp_link() }}" target="_blank" rel="noopener" class="site-footer__wa">WhatsApp Us</a>
+    </div>
+  </div>
+  <div class="site-footer__bar">
+    <div class="container">
+      <span>© {{ current_year }} {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}. All rights reserved.</span>
+      <a href="/admin">Admin</a>
+    </div>
+  </div>
+</footer>

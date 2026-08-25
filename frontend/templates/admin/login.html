@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Login — {{ cfg.STUDIO_NAME }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="icon" href="/static/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon.png">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
+</head>
+<body class="admin admin--auth">
+  <main class="auth-card">
+    <div class="auth-card__brand">
+      <img class="admin-brand__logo" src="/static/img/logo.png" alt="{{ cfg.STUDIO_NAME }} logo" width="64" height="64">
+      <span class="brand__name">{{ cfg.STUDIO_NAME }}</span>
+      <span class="brand__sub">{{ cfg.STUDIO_SUBTITLE }} · Admin</span>
+    </div>
+    <h1 class="auth-card__title">Welcome back</h1>
+    <p class="auth-card__sub">Sign in to manage your catalogue.</p>
+
+    <form class="auth-form" data-login-form novalidate>
+      <div class="form-error" data-form-error hidden></div>
+      <label class="field field--block">
+        <span class="field__label">E-mail</span>
+        <input type="email" name="email" autocomplete="username" required placeholder="admin@studio.com">
+      </label>
+      <label class="field field--block">
+        <span class="field__label">Password</span>
+        <input type="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+      </label>
+      <button type="submit" class="btn btn--primary btn--block" data-login-submit>Sign In</button>
+    </form>
+
+    <a class="auth-card__back" href="/">← Back to site</a>
+  </main>
+  <script src="/static/js/admin.js" defer></script>
+</body>
+</html>

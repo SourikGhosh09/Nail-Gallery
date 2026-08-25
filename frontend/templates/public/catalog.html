@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% import "partials/macros.html" as ui %}
+
+{% block title %}Nail Art Collection — {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}
+{% block meta_description %}Browse the full {{ cfg.STUDIO_NAME }} nail art collection. Search and filter bridal, chrome, French, party and minimal designs.{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <p class="section__eyebrow">Collection</p>
+    <h1 class="page-head__title">Nail Art Collection</h1>
+    <p class="page-head__sub">Discover your perfect nail style.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <form class="filters" data-catalog-form method="get" action="/catalog" role="search">
+      <div class="filters__search">
+        <span class="filters__icon" aria-hidden="true">⌕</span>
+        <input type="search" name="search" value="{{ current_search }}" placeholder="Search nail art…"
+               aria-label="Search nail art" data-catalog-search autocomplete="off">
+      </div>
+      <div class="filters__controls">
+        <label class="field">
+          <span class="field__label">Category</span>
+          <select name="category" data-catalog-category aria-label="Filter by category">
+            <option value="">All Categories</option>
+            {% for c in categories %}
+            <option value="{{ c.slug }}" {{ 'selected' if current_category == c.slug }}>{{ c.name }} ({{ c.active_design_count }})</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Sort</span>
+          <select name="sort" data-catalog-sort aria-label="Sort designs">
+            {% for value, label in sort_labels %}
+            <option value="{{ value }}" {{ 'selected' if current_sort == value }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit" class="btn btn--primary btn--sm filters__apply">Apply</button>
+      </div>
+    </form>
+
+    <div class="catalog-meta" data-catalog-meta>
+      {% if result.total %}
+        Showing <strong>{{ result.items|length }}</strong> of <strong>{{ result.total }}</strong> design{{ '' if result.total == 1 else 's' }}
+      {% endif %}
+    </div>
+
+    <div data-results>
+      {% if result.items %}
+        <div class="grid grid--cards">
+          {% for nail in result.items %}{{ ui.nail_card(nail) }}{% endfor %}
+        </div>
+      {% else %}
+        <div class="state state--empty">
+          <span class="state__icon" aria-hidden="true">✦</span>
+          <h3>No nail designs found.</h3>
+          <p>Try a different search or category.</p>
+          <a href="/catalog" class="btn btn--outline btn--sm" data-clear-filters>Clear Filters</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div data-pagination>
+      {{ ui.pagination(result, '/catalog', {'search': current_search, 'category': current_category, 'sort': current_sort}) }}
+    </div>
+  </div>
+</section>
+{% endblock %}

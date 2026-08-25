@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd.exe /c \"node --version & echo NODE_EXIT=%errorlevel%\")",
+      "Bash(cmd.exe /c \"winget --version\")",
+      "Read(//c/Program Files//**)",
+      "Bash(py --list)",
+      "Bash(py -3.13 --version)",
+      "Bash(py -3.12 --version)",
+      "Bash(py -3.13 -m pip --version)",
+      "Bash(py -3.13 -m venv .venv)",
+      "Bash(./.venv/Scripts/python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(./.venv/Scripts/python.exe -m pip install -r requirements-dev.txt)",
+      "Bash(DATABASE_URL=\"sqlite:///./_smoke.db\" ./.venv/Scripts/python.exe -c \"import app.main as m; print\\('import OK'\\); print\\('routes:', len\\(m.app.routes\\)\\)\")",
+      "Bash(DATABASE_URL=\"sqlite:///./_smoke.db\" ADMIN_EMAIL=\"admin@studio.test\" ADMIN_PASSWORD=\"SmokeTest!123\" ./.venv/Scripts/python.exe -m app.seed)",
+      "Bash(./.venv/Scripts/python.exe -)",
+      "Bash(rm -f _smoke.db)",
+      "Bash(rm -f storage/uploads/seed_*.jpg)",
+      "Bash(./.venv/Scripts/python.exe -c \"import pytest, httpx; print\\('pytest', pytest.__version__\\); print\\('httpx', httpx.__version__\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -m pytest -q)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -m pytest \"tests/test_auth.py::test_login_malformed_email_is_validation_error\" -q)",
+      "Bash(./.venv/Scripts/python.exe manage.py setup)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8011 --log-level warning)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -m pytest -p no:cacheprovider --tb=short -rN)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -c \"from PIL import Image; im=Image.open\\('static/img/logo.png'\\); print\\('size:', im.size, 'mode:', im.mode, 'aspect W/H:', round\\(im.size[0]/im.size[1],3\\)\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8012 --log-level warning)",
+      "WebSearch",
+      "WebFetch(domain:dpdns.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:render.com)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe backend/manage.py test)"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+# =============================================================================
+#  Miss Universe Nail Art Studio — PRODUCTION stack (live website)
+# =============================================================================
+#  This is the file you use ON YOUR SERVER to run the site for real, on your
+#  own domain, with automatic HTTPS. It runs two things:
+#
+#     caddy  →  gets a free HTTPS certificate + handles all internet traffic
+#     web    →  your actual application (kept private, behind Caddy)
+#
+#  On the server, after you've created your .env file (see docs/DEPLOY_ORACLE.md):
+#
+#     docker compose -f docker-compose.prod.yml up -d --build
+#
+#  Required values in .env:
+#     ENV=production
+#     DOMAIN=yourdomain.com
+#     BASE_URL=https://yourdomain.com
+#     SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD  (and your contact details)
+# =============================================================================
+
+services:
+  # ---- Your application (private; only Caddy can reach it) -------------------
+  web:
+    build: .
+    image: miss-universe-nail-studio
+    env_file:
+      - .env
+    environment:
+      # Store the database and uploads on persistent disk inside the container's
+      # named volumes (see the "volumes:" section at the bottom).
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/nailstudio.db}
+      UPLOAD_DIR: /app/storage/uploads
+    expose:
+      - "8000"          # visible only to Caddy — NOT published to the internet
+    volumes:
+      - uploads:/app/storage/uploads   # customer-facing photos survive restarts
+      - data:/app/data                 # your database survives restarts
+    # --proxy-headers lets the app trust Caddy's "this request came in over HTTPS"
+    # information, so secure cookies and correct links work behind the proxy.
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    restart: unless-stopped
+
+  # ---- Caddy: automatic HTTPS + reverse proxy --------------------------------
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - web
+    ports:
+      - "80:80"         # HTTP  (needed so Caddy can obtain the certificate)
+      - "443:443"       # HTTPS (your real, secure site)
+    environment:
+      # Fails fast with a clear message if you forgot to set DOMAIN in .env.
+      DOMAIN: ${DOMAIN:?Set DOMAIN=yourdomain.com in your .env file first}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # stores your HTTPS certificates (keep this!)
+      - caddy_config:/config
+    restart: unless-stopped
+
+# ---- Persistent storage (survives restarts, rebuilds and reboots) -----------
+volumes:
+  uploads:
+  data:
+  caddy_data:
+  caddy_config:

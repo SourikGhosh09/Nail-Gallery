@@ -1,0 +1,84 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_title %}{{ 'Edit' if nail else 'Add' }} Nail Art{% endblock %}
+{% block page_heading %}{{ 'Edit Nail Art' if nail else 'Add Nail Art' }}{% endblock %}
+
+{% block admin_content %}
+<form class="admin-form" data-nail-form data-nail-id="{{ nail.id if nail else '' }}" novalidate>
+  <div class="form-error" data-form-error hidden></div>
+
+  <div class="admin-form__grid">
+    <div class="admin-form__main">
+      <label class="field field--block">
+        <span class="field__label">Name <em>*</em></span>
+        <input type="text" name="name" value="{{ nail.name if nail else '' }}" maxlength="160" required>
+        <span class="field__error" data-error-for="name"></span>
+      </label>
+
+      <label class="field field--block">
+        <span class="field__label">Description <em>*</em></span>
+        <textarea name="description" rows="5" maxlength="5000" required>{{ nail.description if nail else '' }}</textarea>
+        <span class="field__error" data-error-for="description"></span>
+      </label>
+
+      <div class="admin-form__row">
+        <label class="field field--block">
+          <span class="field__label">Price ({{ cfg.CURRENCY_SYMBOL }}) <em>*</em></span>
+          <input type="number" name="price" min="0" step="0.01" value="{{ ('%g' % (nail.price|float)) if nail else '' }}" required>
+          <span class="field__error" data-error-for="price"></span>
+        </label>
+
+        <label class="field field--block">
+          <span class="field__label">Category <em>*</em></span>
+          <select name="category_id" required>
+            <option value="" {{ 'selected' if not nail }} disabled>Select category…</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}" {{ 'selected' if nail and nail.category_id == c.id }}>
+              {{ c.name }}{{ ' (inactive)' if c.status.value == 'inactive' }}
+            </option>
+            {% endfor %}
+          </select>
+          <span class="field__error" data-error-for="category_id"></span>
+        </label>
+      </div>
+
+      <label class="field field--block">
+        <span class="field__label">Status</span>
+        <select name="status">
+          <option value="active" {{ 'selected' if not nail or nail.status.value == 'active' }}>Active (visible on site)</option>
+          <option value="inactive" {{ 'selected' if nail and nail.status.value == 'inactive' }}>Inactive (hidden)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="admin-form__aside">
+      <div class="field field--block">
+        <span class="field__label">Image</span>
+        <div class="image-drop" data-image-drop>
+          <img class="image-drop__preview" data-image-preview
+               src="{{ media_url(nail.image_path) if nail and nail.image_path else '' }}"
+               alt="" {{ 'hidden' if not (nail and nail.image_path) }}>
+          <div class="image-drop__hint" data-image-hint {{ 'hidden' if nail and nail.image_path }}>
+            <span>Click to choose an image</span>
+            <small>JPG, PNG or WEBP · up to {{ cfg.MAX_UPLOAD_MB }} MB</small>
+          </div>
+          <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" data-image-input>
+        </div>
+        <span class="field__error" data-error-for="image"></span>
+        {% if nail and nail.image_path %}
+        <label class="field-check"><input type="checkbox" name="remove_image" value="true"> Remove current image</label>
+        {% endif %}
+      </div>
+
+      <label class="field field--block">
+        <span class="field__label">Image alt text</span>
+        <input type="text" name="image_alt" value="{{ nail.image_alt if nail else '' }}" maxlength="255" placeholder="Describes the image for accessibility & SEO">
+      </label>
+    </div>
+  </div>
+
+  <div class="admin-form__actions">
+    <button type="submit" class="btn btn--primary" data-submit>{{ 'Save Changes' if nail else 'Create Nail Art' }}</button>
+    <a href="/admin/nail-arts" class="btn btn--ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

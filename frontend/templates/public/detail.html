@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% import "partials/macros.html" as ui %}
+
+{% set img = media_url(nail.image_path) %}
+{% set abs_img = (cfg.BASE_URL ~ img) if img else (cfg.BASE_URL ~ '/static/img/og-default.svg') %}
+
+{% block title %}{{ nail.name }} — {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}
+{% block meta_description %}{{ nail.description|truncate(155) }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}<meta property="og:image" content="{{ abs_img }}">{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json" nonce="{{ csp_nonce() }}">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ nail.name|tojson }},
+  "description": {{ nail.description|tojson }},
+  "image": {{ abs_img|tojson }},
+  "category": {{ (nail.category.name if nail.category else "")|tojson }},
+  "brand": {"@type": "Brand", "name": {{ (cfg.STUDIO_NAME ~ ' ' ~ cfg.STUDIO_SUBTITLE)|tojson }}},
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ '%.2f'|format(nail.price|float) }}",
+    "priceCurrency": {{ cfg.CURRENCY_CODE|tojson }},
+    "availability": "https://schema.org/InStock",
+    "url": "{{ cfg.BASE_URL }}/nail/{{ nail.slug }}"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> <span>/</span>
+    <a href="/catalog">Catalog</a> <span>/</span>
+    {% if nail.category %}<a href="/catalog?category={{ nail.category.slug }}">{{ nail.category.name }}</a> <span>/</span>{% endif %}
+    <span aria-current="page">{{ nail.name }}</span>
+  </nav>
+</div>
+
+<section class="section detail">
+  <div class="container detail__grid">
+    <div class="detail__media">
+      {% if img %}
+        <img src="{{ img }}" alt="{{ nail.image_alt or nail.name }}" width="800" height="800" decoding="async">
+      {% else %}
+        <div class="detail__placeholder" aria-hidden="true">{{ nail.name[:1]|upper }}</div>
+      {% endif %}
+    </div>
+    <div class="detail__info">
+      {% if nail.category %}<a class="chip" href="/catalog?category={{ nail.category.slug }}">{{ nail.category.name }}</a>{% endif %}
+      <h1 class="detail__title">{{ nail.name }}</h1>
+      <p class="detail__price">{{ format_price(nail.price) }}</p>
+      <div class="detail__desc">{{ nail.description }}</div>
+      <a href="{{ whatsapp_link(nail.name) }}" target="_blank" rel="noopener" class="btn btn--primary btn--lg detail__cta">
+        Enquire on WhatsApp
+      </a>
+      <p class="detail__note">Tap the button to message us about “{{ nail.name }}”. We'll help with availability & booking.</p>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="section section--muted">
+  <div class="container">
+    <div class="section__head"><h2 class="section__title">You may also love</h2></div>
+    <div class="grid grid--cards">
+      {% for r in related %}{{ ui.nail_card(r) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}About — {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }}{% endblock %}
+{% block meta_description %}About {{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }} — premium, bespoke nail artistry crafted with care.{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <p class="section__eyebrow">Our Story</p>
+    <h1 class="page-head__title">About {{ cfg.STUDIO_NAME }}</h1>
+    <p class="page-head__sub">{{ cfg.STUDIO_TAGLINE }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container prose">
+    <p>{{ cfg.STUDIO_NAME }} {{ cfg.STUDIO_SUBTITLE }} is a premium nail art studio dedicated to
+    turning your nails into wearable art. From timeless bridal elegance to bold chrome statements,
+    every design is crafted with meticulous care, premium products and a genuine love for the craft.</p>
+
+    <p>We believe beauty is in the details. That is why we take the time to understand your style,
+    your occasion and your personality — then design a set that feels unmistakably <em>you</em>.</p>
+
+    <div class="values values--inline">
+      <div class="values__item"><span class="values__icon">✦</span><h3>Premium Artistry</h3><p>Hand-crafted finishes with exceptional attention to detail.</p></div>
+      <div class="values__item"><span class="values__icon">❋</span><h3>Bespoke Designs</h3><p>Tailored to your event, outfit and personal taste.</p></div>
+      <div class="values__item"><span class="values__icon">♥</span><h3>A Refined Experience</h3><p>A warm, elegant studio experience from start to finish.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container cta-band__inner">
+    <h2>Let's create something beautiful.</h2>
+    <a href="/catalog" class="btn btn--primary">Browse the Collection</a>
+  </div>
+</section>
+{% endblock %}

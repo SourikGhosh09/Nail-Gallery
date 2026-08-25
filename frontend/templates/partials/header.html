@@ -1,0 +1,24 @@
+{# Site header with primary navigation. #}
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <a class="brand" href="/">
+      <img class="brand__logo" src="/static/img/logo.png" alt="{{ cfg.STUDIO_NAME }} logo" width="46" height="46">
+      <span class="brand__text">
+        <span class="brand__name">{{ cfg.STUDIO_NAME }}</span>
+        <span class="brand__sub">{{ cfg.STUDIO_SUBTITLE }}</span>
+      </span>
+    </a>
+
+    <button class="nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="site-nav" data-nav aria-label="Primary">
+      <a href="/" class="{{ 'is-active' if active_page == 'home' }}">Home</a>
+      <a href="/catalog" class="{{ 'is-active' if active_page == 'catalog' }}">Catalog</a>
+      <a href="/about" class="{{ 'is-active' if active_page == 'about' }}">About</a>
+      <a href="/contact" class="{{ 'is-active' if active_page == 'contact' }}">Contact</a>
+      <a href="{{ whatsapp_link() }}" class="btn btn--primary btn--sm" target="_blank" rel="noopener">Enquire</a>
+    </nav>
+  </div>
+</header>

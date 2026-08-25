@@ -1,0 +1,37 @@
+How to run it
+
+On this Windows machine, two double-clicks:
+
+setup.bat — builds the environment, installs everything, creates your settings, seeds demo designs. (Already done once — safe to skip unless starting fresh.)
+dev.bat — starts the site.
+
+Or from a terminal:
+
+.venv\Scripts\python.exe manage.py dev
+INFO:     127.0.0.1:62208 - "GET /admin HTTP/1.1" 200 OK
+
+Then open http://localhost:8000 (admin at /admin).
+
+First login
+Email: admin@missuniverse.local
+Password: ChangeMe!123
+
+⚠️ Before going live, change ADMIN_EMAIL / ADMIN_PASSWORD in .env, then run:
+
+.venv\Scripts\python.exe manage.py reset-admin
+What was built (all working, no placeholders)
+Public site — home, catalogue with live search (name + description), category filter, sort, pagination, detail pages, and a pre-filled WhatsApp enquiry button. No customer accounts, as specified.
+Admin panel — secure login, dashboard, full CRUD for designs and categories, image upload/replace, soft delete + restore, and orphan-safe category deletion (reassign / deactivate / cancel).
+Security — hashed passwords, JWT in an httpOnly cookie, CSRF double-submit, login rate-limiting, input validation, safe image handling, CSP + security headers. No secrets in the frontend; first admin created from .env.
+SEO — semantic HTML, meta/Open Graph, structured data, robots.txt, sitemap.xml.
+Everything configurable in .env — studio name, tagline, WhatsApp number, currency, contact, colours.
+Two bugs found during testing and fixed (in app code, not tests)
+A stray parameter in _nail_slug_exists() broke all nail create/update — app/routers/admin_api.py.
+The validation error handler returned a 500 instead of a clean 422 on malformed input — app/main.py.
+Documentation
+README.md — plain-language guide + "how do I change…?" cheat sheet
+docs/DEPLOYMENT.md — putting it online (HTTPS, Postgres, Docker)
+docs/SECURITY.md — protections + go-live checklist
+docs/API.md — REST API reference (live interactive docs at /api/docs)
+
+The application is functionally complete, tested, and ready to hand over.

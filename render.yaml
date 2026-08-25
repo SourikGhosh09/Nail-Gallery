@@ -1,0 +1,53 @@
+# =============================================================================
+#  Miss Universe Nail Art Studio — Render.com Blueprint (FREE test deploy)
+# =============================================================================
+#  This file lets Render set everything up automatically. In Render you just
+#  click:  New +  ->  Blueprint  ->  pick this repo  ->  Apply.
+#
+#  ⚠️  FREE-TIER NOTE: Render's free plan has NO permanent storage. Any designs
+#  or photos you add through the admin panel will disappear whenever the site
+#  goes to sleep (after ~15 min idle) or restarts. That's fine for TESTING —
+#  the demo catalogue is re-created automatically every time it starts, so the
+#  site always looks complete. For a real, permanent site you'd add a paid disk
+#  (see docs/DEPLOY_RENDER.md).
+# =============================================================================
+
+services:
+  - type: web
+    name: miss-universe-nail-studio
+    runtime: python
+    plan: free
+    region: singapore            # closest to India; change if you prefer
+    rootDir: backend             # the Python server lives in backend/
+    buildCommand: "pip install -r requirements.txt"
+    # Re-seed the demo catalogue (only if empty), then start the web server.
+    # $PORT is provided by Render; the proxy flags make HTTPS + secure logins
+    # work correctly behind Render's load balancer.
+    startCommand: "python manage.py seed || true; uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'"
+    healthCheckPath: /healthz
+    envVars:
+      # ---- App environment -------------------------------------------------
+      - key: ENV
+        value: production
+      # ---- Secrets ---------------------------------------------------------
+      # Render generates a strong random signing key for you (never in the repo).
+      - key: SECRET_KEY
+        generateValue: true
+      # You'll be asked to type these two when you click "Apply" in Render.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # ---- Public studio details (safe to keep here; shown on the site) ----
+      - key: WHATSAPP_NUMBER
+        value: "918910495586"
+      - key: CONTACT_EMAIL
+        value: "miss.universe.nail.art.studio@gmail.com"
+      - key: CONTACT_PHONE
+        value: "+91 89104 95586"
+      - key: CONTACT_ADDRESS
+        value: "Begri Santinivas, Domjur, Howrah"
+      - key: INSTAGRAM_URL
+        value: "https://www.instagram.com/miss.universe.nail.art.studio"
+      - key: FACEBOOK_URL
+        value: "https://www.facebook.com/profile.php?id=61575738492026"
