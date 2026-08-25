@@ -88,7 +88,7 @@ class Settings(BaseSettings):
     CURRENCY_SYMBOL: str = "₹"
 
     # ---- Public base URL ----------------------------------------------------
-    BASE_URL: str = "http://localhost:8000"
+    BASE_URL: str = "https://nail-gallery-p87j.onrender.com"
 
     # ---- Image uploads ------------------------------------------------------
     UPLOAD_DIR: str = "storage/uploads"

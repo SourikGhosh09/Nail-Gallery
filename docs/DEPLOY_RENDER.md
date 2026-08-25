@@ -76,6 +76,11 @@ exactly how to build everything. Render calls this a **Blueprint**.
    signing key, etc.) is filled in **automatically**.
 4. Click **Apply** (or **Create**).
 
+> Important: use **Blueprint**, not the ordinary **Web Service** form. The
+> Blueprint already marks this as a Python website. Choosing the ordinary form
+> can make Render guess Node.js and look for a `package.json` file that this
+> project does not have.
+
 Render now builds your site. The first build takes about **2–5 minutes** — you
 can watch the progress log scroll by. When it finishes you'll see **"Live"** with
 a green dot. ✅

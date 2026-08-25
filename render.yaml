@@ -18,17 +18,20 @@ services:
     runtime: python
     plan: free
     region: singapore            # closest to India; change if you prefer
-    rootDir: backend             # the Python server lives in backend/
-    buildCommand: "pip install -r requirements.txt"
+    # Keep the repository root as the service root. This lets Render redeploy
+    # when either backend/ or frontend/ files change.
+    buildCommand: "pip install -r backend/requirements.txt"
     # Re-seed the demo catalogue (only if empty), then start the web server.
     # $PORT is provided by Render; the proxy flags make HTTPS + secure logins
     # work correctly behind Render's load balancer.
-    startCommand: "python manage.py seed || true; uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'"
+    startCommand: "python backend/manage.py seed; uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'"
     healthCheckPath: /healthz
     envVars:
       # ---- App environment -------------------------------------------------
       - key: ENV
         value: production
+      - key: BASE_URL
+        value: "https://nail-gallery-p87j.onrender.com"
       # ---- Secrets ---------------------------------------------------------
       # Render generates a strong random signing key for you (never in the repo).
       - key: SECRET_KEY
