@@ -188,6 +188,22 @@
     if (!input) return;
 
     input.addEventListener("change", function () {
+      var previews = $("[data-photo-previews]", scope);
+      if (previews) {
+        previews.innerHTML = "";
+        Array.prototype.forEach.call(input.files || [], function (file) {
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = document.createElement("img");
+            img.src = ev.target.result;
+            img.alt = file.name;
+            img.width = 100;
+            img.height = 100;
+            previews.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
       var file = input.files && input.files[0];
       if (!file) return;
       var reader = new FileReader();

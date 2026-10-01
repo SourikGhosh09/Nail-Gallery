@@ -44,7 +44,16 @@
   <div class="container detail__grid">
     <div class="detail__media">
       {% if img %}
-        <img src="{{ img }}" alt="{{ nail.image_alt or nail.name }}" width="800" height="800" decoding="async">
+        <img id="product-photo" src="{{ img }}" alt="{{ nail.image_alt or nail.name }}" width="800" height="800" decoding="async">
+        {% if nail.image_paths|length > 1 %}
+        <div class="product-thumbnails" aria-label="Product photos">
+          {% for path in nail.image_paths %}
+          <a href="{{ media_url(path) }}" data-product-photo aria-label="View photo {{ loop.index }} of {{ nail.name }}" aria-current="{{ 'true' if loop.first else 'false' }}">
+            <img src="{{ media_url(path) }}" alt="{{ nail.image_alt or nail.name }} — photo {{ loop.index }}" width="80" height="80" loading="lazy">
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
       {% else %}
         <div class="detail__placeholder" aria-hidden="true">{{ nail.name[:1]|upper }}</div>
       {% endif %}
@@ -72,4 +81,9 @@
   </div>
 </section>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="/static/js/product-gallery.js" defer></script>
 {% endblock %}

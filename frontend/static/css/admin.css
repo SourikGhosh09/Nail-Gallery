@@ -211,3 +211,7 @@ a { color: var(--rose-deep); text-decoration: none; }
   .admin-form__row { grid-template-columns: 1fr; }
   .admin-actions { justify-content: flex-start; }
 }
+/* Product photo previews and individual removal controls. */
+.photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.photo-previews img, .existing-photo img { object-fit: cover; border-radius: 6px; }
+.existing-photo { display: flex; align-items: center; gap: 12px; margin-top: 12px; }

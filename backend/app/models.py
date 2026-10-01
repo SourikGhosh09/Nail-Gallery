@@ -151,6 +151,13 @@ class NailArt(Base):
     )
 
     category: Mapped["Category"] = relationship(back_populates="nail_arts")
+    photos: Mapped[list["NailArtPhoto"]] = relationship(
+        cascade="all, delete-orphan", order_by="NailArtPhoto.id", lazy="selectin"
+    )
+
+    @property
+    def image_paths(self) -> list[str]:
+        return ([self.image_path] if self.image_path else []) + [p.image_path for p in self.photos]
 
     __table_args__ = (
         # Composite index that matches the most common catalog query:
@@ -160,6 +167,14 @@ class NailArt(Base):
 
     def __repr__(self) -> str:  # pragma: no cover - debug helper
         return f"<NailArt {self.name}>"
+
+
+class NailArtPhoto(Base):
+    __tablename__ = "nail_art_photos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    nail_art_id: Mapped[int] = mapped_column(ForeignKey("nail_arts.id", ondelete="CASCADE"), index=True)
+    image_path: Mapped[str] = mapped_column(String(255), nullable=False)
 
 
 class AuditLog(Base):

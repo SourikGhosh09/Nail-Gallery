@@ -146,6 +146,7 @@ def serialize_nail(n: NailArt, *, with_category: bool = True) -> dict:
         "category_id": n.category_id,
         "image_path": n.image_path,
         "image_url": image_url(n.image_path),
+        "images": [{"image_path": path, "image_url": image_url(path), "image_alt": n.image_alt or n.name} for path in n.image_paths],
         "image_alt": n.image_alt or n.name,
         "status": n.status.value,
         "created_at": n.created_at.isoformat() if n.created_at else None,
