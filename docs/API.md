@@ -137,7 +137,13 @@ Mutations also require the `X-CSRF-Token` header (see Authentication).
 
 **Create/Update fields** (`multipart/form-data`): `name`, `description`,
 `price`, `category_id`, `status` (default `active`), `image_alt` (optional),
-`image` (optional file). Update also accepts `remove_image=true` to clear the
+`images` (optional repeated file field) adds multiple photos in selection order.
+Responses include an ordered `images` array with `image_path`, `image_url`, and
+`image_alt`; the existing singular image fields identify the cover photo.
+Update appends photos and accepts repeated `remove_images` path fields to remove
+individual photos belonging to that product. The first remaining photo becomes
+the cover. Existing photos remain unless explicitly removed.
+The legacy `image` (optional file) field is still supported. Update also accepts `remove_image=true` to clear the
 current photo. Uploaded files must be a real `.jpg/.jpeg/.png/.webp` within the
 size limit, or you get a `422` with `errors.image`.
 

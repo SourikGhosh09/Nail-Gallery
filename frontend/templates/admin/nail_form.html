@@ -52,20 +52,27 @@
 
     <div class="admin-form__aside">
       <div class="field field--block">
-        <span class="field__label">Image</span>
+        <span class="field__label">Product photos</span>
         <div class="image-drop" data-image-drop>
           <img class="image-drop__preview" data-image-preview
                src="{{ media_url(nail.image_path) if nail and nail.image_path else '' }}"
                alt="" {{ 'hidden' if not (nail and nail.image_path) }}>
           <div class="image-drop__hint" data-image-hint {{ 'hidden' if nail and nail.image_path }}>
-            <span>Click to choose an image</span>
+            <span>Click to choose photos</span>
             <small>JPG, PNG or WEBP · up to {{ cfg.MAX_UPLOAD_MB }} MB</small>
           </div>
-          <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" data-image-input>
+          <input type="file" name="images" accept=".jpg,.jpeg,.png,.webp" multiple data-image-input aria-label="Add product photos">
         </div>
-        <span class="field__error" data-error-for="image"></span>
-        {% if nail and nail.image_path %}
-        <label class="field-check"><input type="checkbox" name="remove_image" value="true"> Remove current image</label>
+        <div class="photo-previews" data-photo-previews></div>
+        <small>Select multiple photos together. New photos are added to existing photos. The first remaining photo is the cover.</small>
+        <span class="field__error" data-error-for="images"></span>
+        {% if nail %}
+        {% for path in nail.image_paths %}
+        <div class="existing-photo">
+          <img src="{{ media_url(path) }}" alt="{{ nail.image_alt or nail.name }}" width="100" height="100">
+          <label class="field-check"><input type="checkbox" name="remove_images" value="{{ path }}"> Remove photo {{ loop.index }}{{ ' (cover)' if loop.first }}</label>
+        </div>
+        {% endfor %}
         {% endif %}
       </div>
 

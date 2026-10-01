@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import AuditLog, Category, NailArt, Status, User
+from app.models import AuditLog, Category, NailArt, NailArtPhoto, Status, User
 from app.schemas import (
     CategoryCreate,
     CategoryUpdate,
@@ -30,6 +30,21 @@ from app.utils import slugify, unique_slug
 router = APIRouter(
     prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin_api)]
 )
+
+
+def _save_images(uploads: list[UploadFile]) -> list[str]:
+    paths = []
+    try:
+        for upload in uploads:
+            if upload.filename:
+                paths.append(save_upload(upload))
+    except Exception as exc:
+        for path in paths:
+            delete_image(path)
+        if isinstance(exc, ImageValidationError):
+            raise HTTPException(status_code=422, detail={"message": str(exc), "errors": {"images": str(exc), "image": str(exc)}})
+        raise
+    return paths
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +173,7 @@ def create_nail_art(
     status: str = Form("active"),
     image_alt: str | None = Form(None),
     image: UploadFile | None = File(None),
+    images: list[UploadFile] = File(default=[]),
 ):
     try:
         data = NailArtCreate(
@@ -169,12 +185,8 @@ def create_nail_art(
 
     _require_category(db, data.category_id)
 
-    image_path = None
-    if image is not None and image.filename:
-        try:
-            image_path = save_upload(image)
-        except ImageValidationError as exc:
-            raise HTTPException(status_code=422, detail={"message": str(exc), "errors": {"image": str(exc)}})
+    paths = _save_images(([image] if image else []) + images)
+    image_path = paths[0] if paths else None
 
     slug = unique_slug(data.name, _nail_slug_exists(db))
     nail = NailArt(
@@ -183,9 +195,16 @@ def create_nail_art(
         image_path=image_path, image_alt=data.image_alt or data.name,
     )
     db.add(nail)
-    db.flush()
-    _log(db, user, "create", "nail_art", nail.id, nail.name)
-    db.commit()
+    nail.photos = [NailArtPhoto(image_path=path) for path in paths[1:]]
+    try:
+        db.flush()
+        _log(db, user, "create", "nail_art", nail.id, nail.name)
+        db.commit()
+    except Exception:
+        db.rollback()
+        for path in paths:
+            delete_image(path)
+        raise
     db.refresh(nail)
     return {"item": serialize_nail(nail)}
 
@@ -203,6 +222,8 @@ def update_nail_art(
     image_alt: str | None = Form(None),
     remove_image: str | None = Form(None),
     image: UploadFile | None = File(None),
+    images: list[UploadFile] = File(default=[]),
+    remove_images: list[str] = Form(default=[]),
 ):
     nail = db.get(NailArt, nail_id)
     if nail is None:
@@ -218,20 +239,18 @@ def update_nail_art(
 
     _require_category(db, data.category_id)
 
-    # Image handling: replace, remove, or keep.
-    new_image_path = None
-    if image is not None and image.filename:
-        try:
-            new_image_path = save_upload(image)
-        except ImageValidationError as exc:
-            raise HTTPException(status_code=422, detail={"message": str(exc), "errors": {"image": str(exc)}})
-
-    if new_image_path:
-        delete_image(nail.image_path)
-        nail.image_path = new_image_path
-    elif remove_image == "true":
-        delete_image(nail.image_path)
-        nail.image_path = None
+    if any(path not in nail.image_paths for path in remove_images):
+        raise HTTPException(status_code=422, detail="A selected photo does not belong to this product.")
+    paths = _save_images(([image] if image else []) + images)
+    removed = set(remove_images)
+    # Preserve the legacy single-image API's replacement semantics.
+    if (image and image.filename) or remove_image == "true":
+        if nail.image_path:
+            removed.add(nail.image_path)
+    old_paths = nail.image_paths
+    retained = [path for path in old_paths if path not in removed] + paths
+    nail.image_path = retained[0] if retained else None
+    nail.photos = [NailArtPhoto(image_path=path) for path in retained[1:]]
 
     if data.name != nail.name:
         nail.slug = unique_slug(data.name, _nail_slug_exists(db, exclude_id=nail.id))
@@ -243,8 +262,16 @@ def update_nail_art(
     nail.image_alt = data.image_alt or data.name
 
     _log(db, user, "update", "nail_art", nail.id, nail.name)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        for path in paths:
+            delete_image(path)
+        raise
     db.refresh(nail)
+    for path in removed:
+        delete_image(path)
     return {"item": serialize_nail(nail)}
 
 
@@ -279,10 +306,12 @@ def delete_nail_art(
     if nail is None:
         raise HTTPException(status_code=404, detail="Nail art not found.")
     if hard:
-        delete_image(nail.image_path)
+        paths = nail.image_paths
         _log(db, user, "delete", "nail_art", nail.id, nail.name)
         db.delete(nail)
         db.commit()
+        for path in paths:
+            delete_image(path)
         return {"detail": "Nail art permanently deleted."}
     # Soft delete (deactivate).
     nail.status = Status.INACTIVE
