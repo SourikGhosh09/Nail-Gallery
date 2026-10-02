@@ -215,3 +215,9 @@ a { color: var(--rose-deep); text-decoration: none; }
 .photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 .photo-previews img, .existing-photo img { object-fit: cover; border-radius: 6px; }
 .existing-photo { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.photo-card { border: 1px solid #d9d0d3; padding: 12px; margin-top: 14px; border-radius: 8px; }
+.photo-card > img { object-fit: cover; border-radius: 6px; display: block; margin-bottom: 8px; }
+.photo-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.photo-card summary { cursor: pointer; padding: 8px 0; }
+.photo-card canvas { display: block; width: 100%; max-width: 300px; height: auto; border-radius: 6px; }
+.photo-card input[type="range"] { width: 100%; }

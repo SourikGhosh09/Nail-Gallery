@@ -143,6 +143,12 @@ Responses include an ordered `images` array with `image_path`, `image_url`, and
 Update appends photos and accepts repeated `remove_images` path fields to remove
 individual photos belonging to that product. The first remaining photo becomes
 the cover. Existing photos remain unless explicitly removed.
+Update also accepts repeated `image_order` fields containing every retained
+photo path exactly once; the first becomes the cover. `photo_edits` is a JSON
+object keyed by retained photo path, with normalized `x`, `y`, `width`, `height`
+crop coordinates and optional clockwise `rotation` (0, 90, 180, 270). Coordinates
+refer to the rotated image. Crops create new files and replace the old files
+only after a successful database save. Uploads append after the ordered photos.
 The legacy `image` (optional file) field is still supported. Update also accepts `remove_image=true` to clear the
 current photo. Uploaded files must be a real `.jpg/.jpeg/.png/.webp` within the
 size limit, or you get a `422` with `errors.image`.

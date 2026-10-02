@@ -7,6 +7,8 @@ CSRF token.
 """
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from pydantic import ValidationError
 from sqlalchemy import func, select
@@ -24,7 +26,7 @@ from app.schemas import (
 )
 from app.security import require_admin_api
 from app.services import list_nail_arts
-from app.storage import ImageValidationError, delete_image, save_upload
+from app.storage import ImageValidationError, crop_image, delete_image, save_upload
 from app.utils import slugify, unique_slug
 
 router = APIRouter(
@@ -224,6 +226,8 @@ def update_nail_art(
     image: UploadFile | None = File(None),
     images: list[UploadFile] = File(default=[]),
     remove_images: list[str] = Form(default=[]),
+    image_order: list[str] = Form(default=[]),
+    photo_edits: str = Form("{}"),
 ):
     nail = db.get(NailArt, nail_id)
     if nail is None:
@@ -241,14 +245,35 @@ def update_nail_art(
 
     if any(path not in nail.image_paths for path in remove_images):
         raise HTTPException(status_code=422, detail="A selected photo does not belong to this product.")
+    remaining = [path for path in nail.image_paths if path not in remove_images]
+    if image_order and (len(image_order) != len(remaining) or set(image_order) != set(remaining)):
+        raise HTTPException(status_code=422, detail="Photo order must include every remaining photo exactly once.")
+    try:
+        edits = json.loads(photo_edits)
+        if not isinstance(edits, dict) or any(path not in remaining or not isinstance(crop, dict) for path, crop in edits.items()):
+            raise ValueError()
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=422, detail="Invalid photo edits.")
     paths = _save_images(([image] if image else []) + images)
+    replacements = {}
+    try:
+        for path, crop in edits.items():
+            replacements[path] = crop_image(path, crop)
+    except Exception as exc:
+        for path in paths + list(replacements.values()):
+            delete_image(path)
+        if isinstance(exc, ImageValidationError):
+            raise HTTPException(status_code=422, detail=str(exc))
+        raise
     removed = set(remove_images)
     # Preserve the legacy single-image API's replacement semantics.
     if (image and image.filename) or remove_image == "true":
         if nail.image_path:
             removed.add(nail.image_path)
     old_paths = nail.image_paths
-    retained = [path for path in old_paths if path not in removed] + paths
+    retained = [replacements.get(path, path) for path in (image_order or old_paths) if path not in removed] + paths
+    paths += list(replacements.values())
+    removed.update(replacements)
     nail.image_path = retained[0] if retained else None
     nail.photos = [NailArtPhoto(image_path=path) for path in retained[1:]]
 

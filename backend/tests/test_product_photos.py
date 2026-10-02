@@ -1,4 +1,6 @@
 from app.config import settings
+import json
+from PIL import Image
 from helpers import create_category, create_nail, make_png
 
 
@@ -43,3 +45,46 @@ def test_invalid_batch_preserves_existing_photos_and_cleans_uploads(auth_client)
     assert response.status_code == 422
     assert set(settings.upload_path.iterdir()) == before
     assert auth_client.get(f"/api/admin/nail-arts/{item['id']}").json()["item"]["image_path"] == item["image_path"]
+
+
+def test_reorder_cover_and_crop_are_persisted(auth_client):
+    cid = create_category(auth_client, "Editing").json()["item"]["id"]
+    data = {"name": "Editable", "description": "Angles", "price": "100", "category_id": str(cid)}
+    item = auth_client.post("/api/admin/nail-arts", data=data, files=[
+        ("images", ("one.png", make_png(), "image/png")),
+        ("images", ("two.png", make_png(), "image/png")),
+        ("images", ("three.png", make_png(), "image/png")),
+    ]).json()["item"]
+    paths = [photo["image_path"] for photo in item["images"]]
+    order = [paths[2], paths[0], paths[1]]
+    response = auth_client.put(f"/api/admin/nail-arts/{item['id']}", data={**data, "image_order": order,
+        "photo_edits": json.dumps({paths[2]: {"x": 0.25, "y": 0.25, "width": 0.5, "height": 0.5, "rotation": 90}})})
+    assert response.status_code == 200, response.text
+    updated = auth_client.get(f"/api/admin/nail-arts/{item['id']}").json()["item"]
+    assert updated["image_path"] != paths[2]
+    assert [photo["image_path"] for photo in updated["images"]][1:] == paths[:2]
+    with Image.open(settings.upload_path / paths[0]) as original, Image.open(settings.upload_path / updated["image_path"]) as cropped:
+        assert cropped.size == (original.height // 2, original.width // 2)
+    assert not (settings.upload_path / paths[2]).exists()
+    page = auth_client.get(f"/admin/nail-arts/{item['id']}/edit")
+    assert "Make cover" in page.text
+    assert "photo-editor.js" in page.text
+
+
+def test_invalid_order_and_crop_leave_photos_unchanged(auth_client):
+    cid = create_category(auth_client, "Invalid edits").json()["item"]["id"]
+    item = create_nail(auth_client, "Unchanged", cid, image=make_png()).json()["item"]
+    data = {"name": item["name"], "description": "Keep", "price": "100", "category_id": str(cid)}
+    before = set(settings.upload_path.iterdir())
+    for extra in (
+        {"image_order": [item["image_path"], item["image_path"]]},
+        {"image_order": ["someone-elses.png"]},
+        {"photo_edits": "[]"},
+        {"photo_edits": json.dumps({"someone-elses.png": {}})},
+        {"photo_edits": json.dumps({item["image_path"]: {"x": 0, "y": 0, "width": 2, "height": 1}})},
+    ):
+        response = auth_client.put(f"/api/admin/nail-arts/{item['id']}", data={**data, **extra},
+            files=[("images", ("new.png", make_png(), "image/png"))])
+        assert response.status_code == 422, response.text
+        assert set(settings.upload_path.iterdir()) == before
+        assert auth_client.get(f"/api/admin/nail-arts/{item['id']}").json()["item"]["images"] == item["images"]
