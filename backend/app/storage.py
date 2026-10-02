@@ -101,3 +101,28 @@ def delete_image(image_path: str | None) -> None:
             target.unlink()
         except OSError:
             pass
+
+
+def crop_image(image_path: str, crop: dict) -> str:
+    """Create a cropped copy; the old file stays intact until the DB commit."""
+    import math
+    try:
+        values = [float(crop[key]) for key in ("x", "y", "width", "height")]
+        x, y, width, height = values
+        if not all(math.isfinite(v) for v in values) or x < 0 or y < 0 or width <= 0 or height <= 0 or x + width > 1.000001 or y + height > 1.000001:
+            raise ValueError()
+        rotation = crop.get("rotation", 0)
+        if rotation not in (0, 90, 180, 270):
+            raise ValueError()
+        with Image.open(settings.upload_path / Path(image_path).name) as original:
+            image = original.rotate(-rotation, expand=True)
+            w, h = image.size
+            box = (round(x * w), round(y * h), round((x + width) * w), round((y + height) * h))
+            if box[2] <= box[0] or box[3] <= box[1]:
+                raise ValueError()
+            cropped = image.crop(box)
+            name = f"{uuid.uuid4().hex}.png"
+            cropped.save(settings.upload_path / name, format="PNG", optimize=True)
+            return name
+    except (KeyError, TypeError, ValueError, OSError) as exc:
+        raise ImageValidationError("Invalid crop or missing photo. Choose a crop within the photo.") from exc

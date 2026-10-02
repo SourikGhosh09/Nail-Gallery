@@ -64,15 +64,33 @@
           <input type="file" name="images" accept=".jpg,.jpeg,.png,.webp" multiple data-image-input aria-label="Add product photos">
         </div>
         <div class="photo-previews" data-photo-previews></div>
-        <small>Select multiple photos together. New photos are added to existing photos. The first remaining photo is the cover.</small>
+        <small>Select multiple photos together. Save new uploads to edit their crops. Move photos to change their order; the first photo is the cover.</small>
         <span class="field__error" data-error-for="images"></span>
         {% if nail %}
+        <div data-photo-list>
         {% for path in nail.image_paths %}
-        <div class="existing-photo">
-          <img src="{{ media_url(path) }}" alt="{{ nail.image_alt or nail.name }}" width="100" height="100">
-          <label class="field-check"><input type="checkbox" name="remove_images" value="{{ path }}"> Remove photo {{ loop.index }}{{ ' (cover)' if loop.first }}</label>
+        <div class="photo-card" data-photo-card data-path="{{ path }}">
+          <img data-photo-original src="{{ media_url(path) }}" alt="{{ nail.image_alt or nail.name }}" width="100" height="100">
+          <strong data-photo-label>Photo {{ loop.index }}{{ ' — Cover' if loop.first }}</strong>
+          <div class="photo-actions">
+            <button type="button" class="btn btn--ghost" data-photo-up aria-label="Move photo earlier">Move up</button>
+            <button type="button" class="btn btn--ghost" data-photo-down aria-label="Move photo later">Move down</button>
+            <button type="button" class="btn btn--outline" data-photo-cover>Make cover</button>
+          </div>
+          <details data-photo-editor>
+            <summary>Crop / rotate photo</summary>
+            <canvas width="300" height="300" data-crop-preview aria-label="Preview of cropped photo"></canvas>
+            <label class="field field--block">Zoom <input type="range" min="1" max="4" step="0.01" value="1" data-crop-zoom></label>
+            <label class="field field--block">Horizontal position <input type="range" min="0" max="100" value="50" data-crop-x></label>
+            <label class="field field--block">Vertical position <input type="range" min="0" max="100" value="50" data-crop-y></label>
+            <button type="button" class="btn btn--ghost" data-crop-rotate>Rotate 90°</button>
+            <button type="button" class="btn btn--ghost" data-crop-reset>Reset edits</button>
+            <p data-crop-status role="status">Original photo. Adjust a control to apply a square crop.</p>
+          </details>
+          <label class="field-check"><input type="checkbox" name="remove_images" value="{{ path }}"> Remove photo</label>
         </div>
         {% endfor %}
+        </div>
         {% endif %}
       </div>
 
@@ -88,4 +106,8 @@
     <a href="/admin/nail-arts" class="btn btn--ghost">Cancel</a>
   </div>
 </form>
+{% endblock %}
+
+{% block admin_scripts %}
+<script src="/static/js/photo-editor.js" defer></script>
 {% endblock %}
