@@ -3,7 +3,7 @@
 {% block page_heading %}{{ 'Edit Nail Art' if nail else 'Add Nail Art' }}{% endblock %}
 
 {% block admin_content %}
-<form class="admin-form" data-nail-form data-nail-id="{{ nail.id if nail else '' }}" novalidate>
+<form class="admin-form" data-nail-form data-nail-id="{{ nail.id if nail else '' }}" {{ 'data-serverless' if cfg.VERCEL == '1' }} novalidate>
   <div class="form-error" data-form-error hidden></div>
 
   <div class="admin-form__grid">
@@ -65,6 +65,7 @@
         </div>
         <div class="photo-previews" data-photo-previews></div>
         <small>Select multiple photos together. Save new uploads to edit their crops. Move photos to change their order; the first photo is the cover.</small>
+        {% if cfg.VERCEL == '1' %}<small>Up to 4 MB total per save. Add more photos in another save.</small>{% endif %}
         <span class="field__error" data-error-for="images"></span>
         {% if nail %}
         <div data-photo-list>

@@ -28,6 +28,39 @@ class ImageValidationError(Exception):
     """Raised when an uploaded file is not an acceptable image."""
 
 
+def _blob_client():
+    from vercel.blob import BlobClient
+    return BlobClient(token=settings.BLOB_READ_WRITE_TOKEN)
+
+
+def store_image(name: str, data: bytes) -> None:
+    if Path(name).name != name:
+        raise ImageValidationError("Invalid photo filename.")
+    if settings.STORAGE_BACKEND == "vercel_blob":
+        import mimetypes
+        with _blob_client() as client:
+            client.put(name, data, access="private", add_random_suffix=False,
+                       content_type=mimetypes.guess_type(name)[0])
+    else:
+        (settings.upload_path / name).write_bytes(data)
+
+
+def read_image(name: str) -> bytes:
+    if Path(name).name != name:
+        raise FileNotFoundError(name)
+    if settings.STORAGE_BACKEND == "vercel_blob":
+        from vercel.blob.errors import BlobNotFoundError
+        try:
+            with _blob_client() as client:
+                result = client.get(name, access="private", timeout=20, use_cache=False)
+                if result is None:
+                    raise FileNotFoundError(name)
+                return result.content
+        except BlobNotFoundError as exc:
+            raise FileNotFoundError(name) from exc
+    return (settings.upload_path / name).read_bytes()
+
+
 def save_upload(upload) -> str:
     """
     Validate, optimise and store an uploaded image.
@@ -84,14 +117,25 @@ def save_upload(upload) -> str:
     image.thumbnail((_MAX_DIMENSION, _MAX_DIMENSION), Image.LANCZOS)
 
     stored_name = f"{uuid.uuid4().hex}{out_ext}"
-    dest = settings.upload_path / stored_name
-    image.save(dest, format=fmt, **save_kwargs)
+    output = io.BytesIO()
+    image.save(output, format=fmt, **save_kwargs)
+    store_image(stored_name, output.getvalue())
     return stored_name
 
 
 def delete_image(image_path: str | None) -> None:
     """Safely delete a stored image (no-op if missing or outside upload dir)."""
     if not image_path:
+        return
+    if settings.STORAGE_BACKEND == "vercel_blob":
+        import logging
+        if Path(image_path).name != image_path:
+            return
+        try:
+            with _blob_client() as client:
+                client.delete(image_path)
+        except Exception:
+            logging.getLogger(__name__).warning("Unable to remove a stored photo; retry cleanup later.")
         return
     upload_root = settings.upload_path.resolve()
     target = (upload_root / Path(image_path).name).resolve()
@@ -114,7 +158,7 @@ def crop_image(image_path: str, crop: dict) -> str:
         rotation = crop.get("rotation", 0)
         if rotation not in (0, 90, 180, 270):
             raise ValueError()
-        with Image.open(settings.upload_path / Path(image_path).name) as original:
+        with Image.open(io.BytesIO(read_image(image_path))) as original:
             image = original.rotate(-rotation, expand=True)
             w, h = image.size
             box = (round(x * w), round(y * h), round((x + width) * w), round((y + height) * h))
@@ -122,7 +166,9 @@ def crop_image(image_path: str, crop: dict) -> str:
                 raise ValueError()
             cropped = image.crop(box)
             name = f"{uuid.uuid4().hex}.png"
-            cropped.save(settings.upload_path / name, format="PNG", optimize=True)
+            output = io.BytesIO()
+            cropped.save(output, format="PNG", optimize=True)
+            store_image(name, output.getvalue())
             return name
     except (KeyError, TypeError, ValueError, OSError) as exc:
         raise ImageValidationError("Invalid crop or missing photo. Choose a crop within the photo.") from exc

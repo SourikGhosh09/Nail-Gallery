@@ -59,7 +59,15 @@ def _make_engine(url: str):
     return create_engine(url, connect_args=connect_args, **engine_kwargs)
 
 
-engine = _make_engine(_normalize_sqlite_url(settings.DATABASE_URL))
+def normalize_database_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://"):]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://"):]
+    return _normalize_sqlite_url(url)
+
+
+engine = _make_engine(normalize_database_url(settings.DATABASE_URL))
 
 SessionLocal = sessionmaker(
     bind=engine, autoflush=False, autocommit=False, expire_on_commit=False
