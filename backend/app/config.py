@@ -15,7 +15,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
@@ -92,12 +92,28 @@ class Settings(BaseSettings):
 
     # ---- Image uploads ------------------------------------------------------
     UPLOAD_DIR: str = "storage/uploads"
+    STORAGE_BACKEND: str = "local"
+    BLOB_READ_WRITE_TOKEN: str = ""
+    # Schema/admin setup is an explicit migration step on Vercel.
+    SKIP_DB_INIT: bool = False
+    VERCEL: str = ""
     MAX_UPLOAD_MB: int = 5
     ALLOWED_IMAGE_EXTENSIONS: str = ".jpg,.jpeg,.png,.webp"
 
     # ---- Login rate limiting ------------------------------------------------
     LOGIN_RATE_LIMIT_ATTEMPTS: int = 5
     LOGIN_RATE_LIMIT_WINDOW_SECONDS: int = 900
+
+    @model_validator(mode="after")
+    def _validate_hosting(self):
+        if self.STORAGE_BACKEND not in {"local", "vercel_blob"}:
+            raise ValueError("STORAGE_BACKEND must be local or vercel_blob.")
+        if self.VERCEL == "1":
+            if self.is_sqlite or self.STORAGE_BACKEND != "vercel_blob":
+                raise ValueError("Vercel requires PostgreSQL and persistent Blob storage.")
+            if not self.BLOB_READ_WRITE_TOKEN or not self.SKIP_DB_INIT:
+                raise ValueError("Configure Blob credentials and initialize the database before deploying.")
+        return self
 
     # ---- Derived / helpers --------------------------------------------------
     @field_validator("WHATSAPP_NUMBER")

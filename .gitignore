@@ -7,6 +7,9 @@ __pycache__/
 .coverage
 htmlcov/
 .mypy_cache/
+.uv-cache/
+.vercel/
+*.zip
 
 # ---- Virtual environments ----
 .venv/

@@ -1,0 +1,11 @@
+.git
+.venv
+.uv-cache
+backend/tests
+.pytest_cache
+*.db
+*.sqlite*
+*.zip
+.env*
+storage/uploads
+docs

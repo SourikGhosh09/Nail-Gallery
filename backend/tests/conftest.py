@@ -24,6 +24,10 @@ os.environ.update(
         "ADMIN_EMAIL": "admin@test.local",
         "ADMIN_PASSWORD": "TestPassw0rd!",
         "UPLOAD_DIR": _TMP_UPLOADS,
+        "STORAGE_BACKEND": "local",
+        "BLOB_READ_WRITE_TOKEN": "",
+        "SKIP_DB_INIT": "false",
+        "VERCEL": "",
         "LOGIN_RATE_LIMIT_ATTEMPTS": "1000",  # avoid rate-limit flakiness in tests
     }
 )

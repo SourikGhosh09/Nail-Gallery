@@ -240,8 +240,20 @@
       var btn = $("[data-submit]", form);
       var method = id ? "PUT" : "POST";
       var url = API + "/admin/nail-arts" + (id ? "/" + id : "");
+      var payload = new FormData(form);
+      // Vercel limits the whole request, including all photos and form fields.
+      if (form.hasAttribute("data-serverless")) {
+        var totalBytes = 0;
+        payload.forEach(function (value) {
+          totalBytes += value instanceof Blob ? value.size : new Blob([String(value)]).size;
+        });
+        if (totalBytes > 4 * 1024 * 1024) {
+          showError($("[data-form-error]", form), "These photos exceed the 4 MB upload limit. Choose fewer or smaller photos, save, then add the rest.");
+          return;
+        }
+      }
       setLoading(btn, true, "Saving…");
-      api(method, url, { form: new FormData(form) }).then(function (res) {
+      api(method, url, { form: payload }).then(function (res) {
         if (res.ok) { flash(id ? "Nail art updated." : "Nail art created.", "ok"); window.location.href = "/admin/nail-arts"; }
         else { applyFormErrors(form, res); setLoading(btn, false); }
       }).catch(function () { showError($("[data-form-error]", form), "Network error. Please try again."); setLoading(btn, false); });

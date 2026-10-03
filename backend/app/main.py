@@ -52,8 +52,9 @@ def ensure_admin() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
-    ensure_admin()
+    if not settings.SKIP_DB_INIT:
+        init_db()
+        ensure_admin()
     yield
 
 
@@ -113,7 +114,39 @@ async def security_headers(request: Request, call_next):
 
 # ---- Static files & uploaded media -----------------------------------------
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-app.mount("/media", StaticFiles(directory=str(settings.upload_path)), name="media")
+if settings.STORAGE_BACKEND == "local":
+    app.mount("/media", StaticFiles(directory=str(settings.upload_path)), name="media")
+else:
+    from app.storage import read_image
+    from fastapi import HTTPException
+    from fastapi.responses import Response
+    from pathlib import Path
+    import mimetypes
+
+    @app.get("/media/{filename}", include_in_schema=False)
+    def blob_media(filename: str, request: Request):
+        if Path(filename).name != filename or Path(filename).suffix.lower() not in settings.allowed_extensions:
+            raise HTTPException(status_code=404, detail="Photo not found.")
+        from sqlalchemy import select, or_
+        from app.models import NailArt, NailArtPhoto, Category, Status
+        from app.security import decode_access_token, COOKIE_NAME
+        with SessionLocal() as db:
+            published = db.scalar(select(NailArt.id).join(NailArt.category).where(
+                NailArt.status == Status.ACTIVE, Category.status == Status.ACTIVE,
+                or_(NailArt.image_path == filename, NailArt.photos.any(NailArtPhoto.image_path == filename)),
+            ).limit(1))
+            if published is None:
+                payload = decode_access_token(request.cookies.get(COOKIE_NAME, ""))
+                subject = str(payload.get("sub", "")) if payload else ""
+                admin = db.get(User, int(subject)) if subject.isdigit() else None
+                if admin is None or not admin.is_active or admin.role != "admin":
+                    raise HTTPException(status_code=404, detail="Photo not found.")
+        try:
+            data = read_image(filename)
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Photo not found.")
+        return Response(data, media_type=mimetypes.guess_type(filename)[0] or "application/octet-stream",
+                        headers={"Cache-Control": "private, no-store"})
 
 # ---- Routers ---------------------------------------------------------------
 app.include_router(auth.router)
